@@ -24,7 +24,7 @@
             ],
             "env": [
               {
-                "name": "KUBE_TASKMASTER_PODNAME"
+                "name": "KUBE_TASKMASTER_PODNAME",
                 "valueFrom": {
 		  "fieldRef": {
 		    "fieldPath": "metadata.name"
