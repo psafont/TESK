@@ -35,8 +35,8 @@ def generate_job_specs(tes):
     specs[exe_i]['spec']['template']['spec']['containers'] = []
     specs[exe_i]['spec']['template']['spec']['containers'].append({ 
                                                          'name': valid_name+'-ex'+str(exe_i),
-                                                         'image': executor['image_name'], 
-                                                         'command': executor['cmd'],
+                                                         'image': executor['image'], 
+                                                         'command': executor['command'],
                                                          'resources': {'requests': 0 }
                                                         })
     specs[exe_i]['spec']['template']['spec']['containers'][0]['resources']['requests'] = { 
@@ -46,16 +46,25 @@ def generate_job_specs(tes):
     exe_i += 1
   return specs
 
-def run_executors(specs, polling_interval, namespace):
+def run_executors(specs, polling_interval, namespace, exe_f = '/tmp/.exe.tesk'):
 
   # init Kubernetes Job API
   v1 = client.BatchV1Api()
+
+  # make sure exe_f is empty
+  exe_fp = open(exe_f, 'w')
+  exe_fp.close()
 
   for executor in specs:
     jobname = executor['metadata']['name']+'-'+binascii.hexlify(os.urandom(4))
     executor['metadata']['name'] = jobname
     job = v1.create_namespaced_job(body=executor, namespace=namespace)
     print("Created job with metadata='%s'" % str(job.metadata))
+    
+    with open(exe_f, 'a') as exe_fp:
+      exe_fp.write(jobname+'\n')
+      exe_fp.close()
+      
     finished = False
 
     # Job polling loop
@@ -84,7 +93,7 @@ def main(argv):
 
   parser.add_argument('-p', '--polling-interval', help='Job polling interval', default=5)
   parser.add_argument('-n', '--namespace', help='Kubernetes namespace to run in', default='default')
-  parser.add_argument('-s', '--state-file', help='State file for state.py script', default='/tmp/.teskstate')
+  parser.add_argument('-e', '--exec-state', help='Executor state file for state.py script', default='/tmp/.exe.tesk')
   args = parser.parse_args()
 
   if args.file is None:
@@ -98,7 +107,7 @@ def main(argv):
 
   config.load_incluster_config()
 
-  state = run_executors(specs, args.polling_interval, args.namespace)
+  state = run_executors(specs, args.polling_interval, args.namespace, exe_f=args.exec-state)
   print("Finished with state %s" % state)
 
 if __name__ == "__main__":
