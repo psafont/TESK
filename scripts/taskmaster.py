@@ -107,7 +107,7 @@ def main(argv):
 
   config.load_incluster_config()
 
-  state = run_executors(specs, args.polling_interval, args.namespace, exe_f=args.exec-state)
+  state = run_executors(specs, args.polling_interval, args.namespace, exe_f=args.exec_state)
   print("Finished with state %s" % state)
 
 if __name__ == "__main__":
