@@ -5,6 +5,7 @@ RUN pip install kubernetes
 
 WORKDIR /root
 COPY scripts/taskmaster.py .
+COPY scripts/state.py .
 
 ENTRYPOINT ["/root/taskmaster.py"]
 #CMD /root/taskmaster.py
